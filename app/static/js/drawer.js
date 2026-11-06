@@ -174,7 +174,8 @@ function watchItem(watch) {
   return el('div', { class: 'watch' },
     el('div', { class: 'watch__info' },
       el('p', { class: 'watch__label' }, watch.label),
-      el('p', { class: 'watch__meta' }, [describeQuery(watch.query), `vérifiée il y a ${formatAge(watch.checked * 1000)}`].join(' · '))),
+      el('p', { class: 'watch__meta' }, describeQuery(watch.query)),
+      el('p', { class: 'watch__meta' }, `Dernière vérification il y a ${formatAge(watch.checked * 1000)}`)),
     remove);
 }
 
