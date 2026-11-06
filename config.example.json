@@ -1,0 +1,22 @@
+{
+  "providers": {
+    "internet_archive": {}
+  },
+  "tmdb": {
+    "token": ""
+  },
+  "transmission": {
+    "url": "http://192.168.1.10:9091/transmission/rpc",
+    "user": "",
+    "password": ""
+  },
+  "notifications": {
+    "webhook_url": ""
+  },
+  "auth": {
+    "user": "",
+    "password_hash": ""
+  },
+  "public_url": "http://192.168.1.10:8282/",
+  "data_dir": "/data"
+}

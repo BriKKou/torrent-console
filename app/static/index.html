@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#151821">
+  <title>Recherche torrent</title>
+  <link rel="icon" href="icon.svg">
+  <link rel="stylesheet" href="app.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-rows" viewBox="0 0 24 24"><path d="M3 5h18M3 10h18M3 15h18M3 20h18"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="10" rx="1.5"/><path d="M14 5h7M14 9h7M14 13h5M3 18h18"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M3 21v-5h5"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m7 4 13 8-13 8z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></symbol>
+  </svg>
+
+  <header class="top">
+    <div class="wrap bar bar--meta">
+      <span class="brand"><span class="brand__mark"><svg class="ic"><use href="#i-search"/></svg></span><span class="brand__name">Recherche torrent</span></span>
+      <div id="account" class="account" hidden></div>
+      <button type="button" id="open-drawer" class="btn btn--sm drawer-toggle" title="Téléchargements et surveillances" aria-controls="drawer">
+        <svg class="ic"><use href="#i-download"/></svg><span id="active-count" class="count-pill" hidden></span>
+      </button>
+    </div>
+    <div class="wrap bar">
+      <form id="search" role="search">
+        <input id="q" type="search" placeholder="Film, série…" autocomplete="off" enterkeyhint="search" aria-label="Recherche">
+        <button type="submit" class="btn btn--primary">Rechercher</button>
+      </form>
+    </div>
+    <div class="wrap bar">
+      <div id="type" class="seg" role="group" aria-label="Type"></div>
+      <div id="view" class="seg seg--right" role="group" aria-label="Affichage"></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="filters panel" aria-label="Filtres">
+      <div id="filter-line" class="filter-line"></div>
+      <button type="button" id="more" class="btn btn--sm btn--icon" aria-expanded="false" aria-controls="filter-line"></button>
+    </section>
+    <div class="statusbar">
+      <p id="status" class="status" role="status"></p>
+      <div class="statusbar__right">
+        <button type="button" id="reset" class="btn btn--ghost btn--sm" hidden></button>
+        <button type="button" id="watch" class="btn btn--sm" title="Être prévenu des nouvelles releases de cette recherche"><svg class="ic"><use href="#i-bell"/></svg><span class="seg__label">Surveiller</span></button>
+        <button type="button" id="refresh" class="btn btn--sm btn--icon" title="Actualiser" aria-label="Actualiser"><svg class="ic"><use href="#i-refresh"/></svg></button>
+        <label id="provider-box" class="sort" hidden>Source <select id="provider"></select></label>
+        <label class="sort">Tri <select id="sort"></select></label>
+      </div>
+    </div>
+    <div id="loading" class="loading" hidden>
+      <span class="spinner" aria-hidden="true"></span>
+      <span>Recherche en cours…</span>
+    </div>
+    <div id="results"></div>
+    <div id="load-more" class="load-more" hidden>
+      <button type="button" id="load-btn" class="btn">Charger plus</button>
+      <p id="load-note" class="load-more__note"></p>
+    </div>
+  </main>
+
+  <div id="drawer-backdrop" class="drawer-backdrop" hidden></div>
+  <aside id="drawer" class="drawer" aria-label="Téléchargements et surveillances" hidden>
+    <header class="drawer__head">
+      <div id="drawer-tabs" class="seg" role="group" aria-label="Onglets">
+        <button type="button" data-tab="downloads" aria-pressed="true">Téléchargements</button>
+        <button type="button" data-tab="watches" aria-pressed="false">Surveillances</button>
+      </div>
+      <button type="button" id="close-drawer" class="btn btn--sm btn--icon btn--ghost" aria-label="Fermer"><svg class="ic"><use href="#i-close"/></svg></button>
+    </header>
+    <div id="drawer-downloads" class="drawer__body"></div>
+    <div id="drawer-watches" class="drawer__body" hidden></div>
+  </aside>
+
+  <div id="versions-backdrop" class="modal-backdrop" hidden></div>
+  <section id="versions" class="modal" role="dialog" aria-modal="true" aria-labelledby="versions-title" hidden>
+    <header class="modal__head">
+      <div id="versions-poster" class="poster"></div>
+      <div class="modal__intro">
+        <h2 id="versions-title"></h2>
+        <p id="versions-sub" class="modal__sub"></p>
+        <p id="versions-rating" class="rating" hidden></p>
+        <p id="versions-overview" class="modal__overview" hidden></p>
+        <div class="modal__foot">
+          <nav id="versions-links" class="links"></nav>
+          <span id="versions-count" class="modal__count"></span>
+        </div>
+      </div>
+      <button type="button" id="versions-close" class="btn btn--sm btn--icon btn--ghost" aria-label="Fermer"><svg class="ic"><use href="#i-close"/></svg></button>
+    </header>
+    <div id="versions-body" class="modal__body"></div>
+  </section>
+
+  <div id="toast" class="toast" role="alert"></div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Your own settings and data never belong in the repository
+/config.json
+/data/
+.env
+
+# Your own providers stay local too
+/plugins/*
+!/plugins/README.md
+
+__pycache__/
+*.pyc
+*.tmp
+*.bak*
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

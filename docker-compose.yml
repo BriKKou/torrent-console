@@ -1,0 +1,18 @@
+services:
+  torrent-console:
+    image: python:3.12-alpine
+    container_name: torrent-console
+    restart: unless-stopped
+    user: "1000:1000"
+    working_dir: /app
+    command: python -u server.py
+    environment:
+      - TZ=Europe/Paris
+      - PYTHONDONTWRITEBYTECODE=1
+    volumes:
+      - ./app:/app:ro
+      - ./plugins:/plugins:ro          # your own providers, not versioned
+      - ./config.json:/config.json:ro  # keys and settings, chmod 600, not versioned
+      - ./data:/data                   # search watches, bitrate cache
+    ports:
+      - 8282:8282
