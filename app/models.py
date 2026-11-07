@@ -48,6 +48,26 @@ class Query:
         if self.kind not in KINDS or self.sort not in SORTS or self.max_gb < 0:
             raise ValueError("Paramètre de recherche invalide")
 
+    @classmethod
+    def from_params(cls, params: dict) -> "Query":
+        """Requête décrite par les paramètres d'URL de la page et de l'API (q, type, langs, res, sources, max, sort)."""
+        split = lambda name: tuple(v for v in params.get(name, "").split(",") if v)
+        return cls(
+            text=params.get("q", ""),
+            kind=params.get("type") or "all",
+            langs=split("langs"),
+            resolutions=split("res"),
+            sources=split("sources"),
+            max_gb=int(params.get("max") or 0),
+            sort=params.get("sort") or "seeders",
+        )
+
+    def to_params(self) -> dict:
+        """L'inverse de from_params, paramètres vides omis."""
+        params = {"q": self.text, "type": self.kind, "langs": ",".join(self.langs), "res": ",".join(self.resolutions),
+                  "sources": ",".join(self.sources), "max": self.max_gb, "sort": self.sort}
+        return {name: value for name, value in params.items() if value}
+
     def without(self, filters: frozenset[str]) -> "Query":
         """Copie sans les filtres donnés (remis à leur valeur par défaut)."""
         defaults = {f.name: f.default for f in fields(self)}

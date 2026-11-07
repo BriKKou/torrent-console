@@ -1,6 +1,9 @@
-import { LANGS, RESOLUTIONS, SORTS, SOURCES, TYPES, VIEWS } from './constants.js';
+import { LANGS, RESOLUTIONS, SIZE_MAX_GB, SORTS, SOURCES, TYPES, VIEWS } from './constants.js';
 
 const STORAGE_KEY = 'recherche:settings';
+
+const pick = (value, allowed, fallback) => (Object.hasOwn(allowed, value) ? value : fallback);
+const keep = (values, allowed) => (Array.isArray(values) ? values.filter((v) => allowed.includes(v)) : []);
 
 /** Réglages de la page (source, type, vue, tri, filtres), mémorisés dans le navigateur. */
 export function loadSettings() {
@@ -10,8 +13,6 @@ export function loadSettings() {
   } catch {
     // stockage indisponible : réglages par défaut
   }
-  const pick = (value, allowed, fallback) => (Object.hasOwn(allowed, value) ? value : fallback);
-  const keep = (values, allowed) => (Array.isArray(values) ? values.filter((v) => allowed.includes(v)) : []);
   return {
     provider: typeof stored.provider === 'string' ? stored.provider : '', // vérifiée au démarrage
     type: pick(stored.type, TYPES, 'all'),
@@ -22,6 +23,27 @@ export function loadSettings() {
     sources: keep(stored.sources, SOURCES),
     maxSize: Number.isInteger(stored.maxSize) ? stored.maxSize : 0,
   };
+}
+
+/**
+ * Recherche donnée par l'adresse de la page (lien d'une notification, onglet rechargé) :
+ * elle prend la place des réglages mémorisés, sauf la vue. Renvoie le texte cherché.
+ */
+export function applyUrl(settings) {
+  const params = new URLSearchParams(location.search);
+  if (!params.has('provider')) return '';
+  const list = (name) => (params.get(name) || '').split(',');
+  const gb = Number.parseInt(params.get('max'), 10);
+  Object.assign(settings, {
+    provider: params.get('provider'), // vérifiée au démarrage
+    type: pick(params.get('type'), TYPES, 'all'),
+    sort: pick(params.get('sort'), SORTS, 'seeders'),
+    langs: keep(list('langs'), LANGS),
+    res: keep(list('res'), RESOLUTIONS),
+    sources: keep(list('sources'), SOURCES),
+    maxSize: gb > 0 && gb < SIZE_MAX_GB ? gb : 0, // comme le curseur : tout à droite = pas de limite
+  });
+  return (params.get('q') || '').trim();
 }
 
 export function saveSettings(settings) {

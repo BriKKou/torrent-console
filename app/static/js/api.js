@@ -24,6 +24,13 @@ function queryParams(settings, text) {
   };
 }
 
+/** Adresse de la page pour cette recherche (paramètres vides omis), au format des liens des notifications. */
+export function searchLink(settings, text) {
+  const params = Object.entries({ provider: settings.provider, ...queryParams(settings, text) })
+    .filter(([, value]) => value !== '' && value !== 0);
+  return `?${new URLSearchParams(params)}`;
+}
+
 let providers;
 
 /** Sources configurées : clé, nom et fonctions facultatives fournies (account, video_bitrate). */

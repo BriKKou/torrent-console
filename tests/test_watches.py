@@ -13,9 +13,11 @@ from watches import WatchService
 class RecordingNotifier:
     def __init__(self):
         self.sent = []
+        self.urls = []
 
     def send(self, title, message, url=""):
         self.sent.append((title, message))
+        self.urls.append(url)
 
 
 class WatchServiceTest(unittest.TestCase):
@@ -36,6 +38,14 @@ class WatchServiceTest(unittest.TestCase):
         self.service.check_all()
         self.service.check_all()
         self.assertEqual(self.notifier.sent, [("Nouvelle release : Films", "Film.99")])
+
+    def test_notification_opens_the_watched_search(self):
+        service = WatchService(SearchService([self.provider]), self.notifier, self.path, "http://nas:8282/")
+        watch = service.add("Films", "fake", Query(text="film", langs=("MULTI", "VFF")))
+        self.provider.releases.insert(0, release(99))
+        service.check_all()
+        self.assertEqual(self.notifier.urls, ["http://nas:8282/?provider=fake&q=film&type=all&langs=MULTI%2CVFF&sort=date"])
+        self.assertEqual(Query.from_params(watch.query.to_params()), watch.query)
 
     def test_watches_survive_restart_and_removal(self):
         watch = self.service.add("Dune", "fake", Query(text="dune", langs=("MULTI",)))

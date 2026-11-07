@@ -1,6 +1,7 @@
 """Surveillances de recherches : une notification quand une nouvelle release correspond, sans rien télécharger."""
 import threading
 import time
+import urllib.parse
 import uuid
 from dataclasses import asdict, dataclass, field, replace
 
@@ -88,7 +89,13 @@ class WatchService:
         lines = [r.title for r in releases[:MAX_LISTED]]
         if len(releases) > MAX_LISTED:
             lines.append(f"… et {len(releases) - MAX_LISTED} autres")
-        self._notifier.send(title, "\n".join(lines), self._page_url)
+        self._notifier.send(title, "\n".join(lines), self._link(watch))
+
+    def _link(self, watch: Watch) -> str:
+        """La page ouverte sur la recherche surveillée, triée par date : les nouveautés en tête."""
+        if not self._page_url:
+            return ""
+        return f"{self._page_url}?{urllib.parse.urlencode({'provider': watch.provider, **watch.query.to_params()})}"
 
     def _load(self) -> list[Watch]:
         return [Watch.from_json(item) for item in read_json(self._path, [])]

@@ -41,19 +41,6 @@ WATCHES_CHECK_S = 30 * 60
 log = logging.getLogger(__name__)
 
 
-def query_from_params(params: dict) -> Query:
-    split = lambda name: tuple(v for v in params.get(name, "").split(",") if v)
-    return Query(
-        text=params.get("q", ""),
-        kind=params.get("type") or "all",
-        langs=split("langs"),
-        resolutions=split("res"),
-        sources=split("sources"),
-        max_gb=int(params.get("max") or 0),
-        sort=params.get("sort") or "seeders",
-    )
-
-
 class App:
     """Les services, assemblés à partir de la configuration."""
 
@@ -86,7 +73,7 @@ class App:
         return {"providers": [{"key": p.key, "label": p.label, "features": p.features()} for p in self.providers]}
 
     def search_releases(self, params: dict) -> dict:
-        batch = self.search.search(self.provider_key(params.get("provider")), query_from_params(params),
+        batch = self.search.search(self.provider_key(params.get("provider")), Query.from_params(params),
                                    offset=int(params.get("after") or 0), refresh=params.get("refresh") == "1")
         return {**asdict(batch), "releases": [asdict(r) for r in batch.releases]}
 
@@ -138,7 +125,7 @@ class App:
         provider = self.provider_key(body.get("provider"))
         self.search.provider(provider)  # source inconnue : erreur avant tout appel
         params = {name: str(value) for name, value in (body.get("params") or {}).items()}
-        watch = self.watches.add(str(body.get("label", "")), provider, query_from_params(params))
+        watch = self.watches.add(str(body.get("label", "")), provider, Query.from_params(params))
         return watch.summary()
 
     def remove_watch(self, body: dict) -> dict:

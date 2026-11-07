@@ -99,7 +99,7 @@ Tout se trouve dans `config.json`. Partez de `config.example.json`.
 | `transmission.user`, `transmission.password` | Identifiants RPC. Laissez les deux vides si l'authentification RPC est désactivée. |
 | `notifications.webhook_url` | Adresse du webhook Home Assistant. Vide : pas de notifications. |
 | `auth.user`, `auth.password_hash` | Identifiant de la page. Empreinte vide : pas de mot de passe. À définir avec `set_password.py`. |
-| `public_url` | Adresse de la page, ouverte quand on touche une notification. |
+| `public_url` | Adresse de la page, ouverte quand on touche une notification (sur la recherche surveillée, pour une surveillance). |
 | `data_dir` | Dossier où sont écrits les surveillances et le cache des débits. `/data` dans le conteneur. |
 
 ### Mot de passe
@@ -143,7 +143,7 @@ actions:
 mode: queued
 ```
 
-Renseignez ensuite `notifications.webhook_url` avec `http://<home-assistant>:8123/api/webhook/<le même identifiant>`. L'application envoie `{"title", "message", "url"}`, où `url` est votre `public_url`. Si Home Assistant ne répond pas, la notification est perdue et l'erreur journalisée ; rien d'autre ne s'arrête.
+Renseignez ensuite `notifications.webhook_url` avec `http://<home-assistant>:8123/api/webhook/<le même identifiant>`. L'application envoie `{"title", "message", "url"}`. Pour une surveillance, `url` ouvre la page sur la recherche surveillée, triée par date (`<public_url>?provider=…&q=…&sort=date`) ; pour un téléchargement terminé, c'est votre `public_url`. Si Home Assistant ne répond pas, la notification est perdue et l'erreur journalisée ; rien d'autre ne s'arrête.
 
 ## Sources
 

@@ -99,7 +99,7 @@ Everything lives in `config.json`. Start from `config.example.json`.
 | `transmission.user`, `transmission.password` | RPC login. Leave both empty if RPC authentication is off. |
 | `notifications.webhook_url` | Home Assistant webhook address. Empty: no notifications. |
 | `auth.user`, `auth.password_hash` | Page login. Empty hash: no password. Set them with `set_password.py`. |
-| `public_url` | Address of the page, opened when you tap a notification. |
+| `public_url` | Address of the page, opened when you tap a notification (on the watched search, for a watch). |
 | `data_dir` | Where watches and the bitrate cache are written. `/data` in the container. |
 
 ### Password
@@ -143,7 +143,7 @@ actions:
 mode: queued
 ```
 
-Then set `notifications.webhook_url` to `http://<home-assistant>:8123/api/webhook/<the same id>`. The app posts `{"title", "message", "url"}`, where `url` is your `public_url`. If Home Assistant can't be reached, the notification is dropped and the error logged; nothing else stops.
+Then set `notifications.webhook_url` to `http://<home-assistant>:8123/api/webhook/<the same id>`. The app posts `{"title", "message", "url"}`. For a watch, `url` opens the page on the watched search, sorted by date (`<public_url>?provider=…&q=…&sort=date`); for a finished download, it is your `public_url`. If Home Assistant can't be reached, the notification is dropped and the error logged; nothing else stops.
 
 ## Sources
 

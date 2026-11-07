@@ -1,17 +1,17 @@
 import { showAccount } from './account.js';
-import { addWatch, fetchProviders, searchReleases } from './api.js';
+import { addWatch, fetchProviders, searchLink, searchReleases } from './api.js';
 import { mountControls, mountProviders } from './controls.js';
 import { $, el } from './dom.js';
 import { mountDrawer, openDrawer } from './drawer.js';
 import { mountVersions } from './versions.js';
 import { plural } from './format.js';
 import { appendReleases, renderReleases } from './results.js';
-import { loadSettings } from './settings.js';
+import { applyUrl, loadSettings } from './settings.js';
 import { toast } from './toast.js';
 
 const settings = loadSettings();
 // `id` écarte les réponses d'une recherche dépassée
-const session = { id: 0, text: '', releases: [], batch: null };
+const session = { id: 0, text: applyUrl(settings), releases: [], batch: null };
 
 function updateStatus(added = null) {
   const { batch, releases } = session;
@@ -32,6 +32,8 @@ function updateStatus(added = null) {
 async function search({ refresh = false } = {}) {
   const id = ++session.id;
   Object.assign(session, { releases: [], batch: null });
+  // L'adresse suit la recherche affichée : un onglet rechargé la retrouve
+  history.replaceState(null, '', searchLink(settings, session.text));
   $('status').textContent = '';
   $('results').replaceChildren();
   $('results').className = '';
@@ -84,6 +86,7 @@ async function watchSearch() {
   }
 }
 
+$('q').value = session.text;
 mountControls(settings, {
   onQueryChange: () => search(),
   onViewChange: () => renderReleases($('results'), session.releases, settings.view),
