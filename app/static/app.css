@@ -674,9 +674,20 @@ select {
 
 .torrent__error { margin: 0; color: var(--danger); font-size: .76rem; }
 
-.confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 2px; font-size: .8rem; }
+.confirm { display: grid; gap: 8px; padding-top: 2px; font-size: .8rem; }
+
+.confirm__question { margin: 0; }
+
+/* Tous les choix sur une ligne ; sur un écran étroit, le libellé passe sur deux lignes */
+.confirm__actions { display: flex; gap: 6px; }
+
+.confirm__actions .btn { flex: 1 1 auto; min-width: 0; line-height: 1.2; white-space: normal; text-align: center; }
 
 .btn--danger { border-color: color-mix(in srgb, var(--danger) 45%, transparent); color: var(--danger); }
+
+.btn--danger.btn--solid { border-color: var(--danger); background: var(--danger); color: var(--accent-fg); }
+
+.btn--danger.btn--solid:hover { background: color-mix(in srgb, var(--danger) 85%, #fff); }
 
 .watch { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 

@@ -13,7 +13,10 @@ const STATE_ORDER = ['downloading', 'checking', 'queued', 'paused', 'seeding'];
 let currentTab = 'downloads';
 let timer;
 let torrents = [];
-const confirming = new Set(); // torrents dont la suppression attend une confirmation
+// Retrait en deux temps : choix (garder ou supprimer les fichiers), puis confirmation de ce choix.
+// id du torrent -> { step: 'choose' | 'remove' | 'delete', since: début de l'étape }
+const confirming = new Map();
+const CONFIRM_DELAY_MS = 500; // un double clic sur le choix ne doit pas valider aussi la confirmation
 
 /** Volet latéral : téléchargements de Transmission et surveillances de recherches. */
 export function mountDrawer() {
@@ -94,10 +97,7 @@ function torrentItem(torrent) {
       el('span', {}, torrentStatus(torrent)),
       el('span', { class: 'torrent__actions' },
         actionButton(paused ? 'i-play' : 'i-pause', paused ? 'Reprendre' : 'Mettre en pause', () => act(paused ? 'start' : 'stop', torrent)),
-        actionButton('i-trash', 'Retirer', () => {
-          confirming.add(torrent.id);
-          renderTorrents();
-        }))),
+        actionButton('i-trash', 'Retirer', () => showRemovalStep(torrent, 'choose')))),
     torrent.error ? el('p', { class: 'torrent__error' }, torrent.error) : null,
     confirming.has(torrent.id) ? removalConfirm(torrent) : null);
 }
@@ -115,7 +115,13 @@ function torrentStatus(torrent) {
   return parts.filter(Boolean).join(' · ');
 }
 
+function showRemovalStep(torrent, step) {
+  confirming.set(torrent.id, { step, since: Date.now() });
+  renderTorrents();
+}
+
 function removalConfirm(torrent) {
+  const { step, since } = confirming.get(torrent.id);
   const choice = (label, className, onClick) => {
     const button = el('button', { type: 'button', class: `btn btn--sm ${className}` }, label);
     button.addEventListener('click', onClick);
@@ -125,11 +131,29 @@ function removalConfirm(torrent) {
     confirming.delete(torrent.id);
     renderTorrents();
   };
+  const confirm = (action) => () => {
+    if (Date.now() - since >= CONFIRM_DELAY_MS) act(action, torrent);
+  };
+  // 2e étape : « Annuler » à la place du choix qu'on vient de cliquer
+  const steps = {
+    choose: ['Retirer ce torrent ?', [
+      choice('Garder les fichiers', '', () => showRemovalStep(torrent, 'remove')),
+      choice('Supprimer les fichiers', 'btn--danger', () => showRemovalStep(torrent, 'delete')),
+      choice('Annuler', 'btn--ghost', cancel),
+    ]],
+    remove: ['Retirer ce torrent de Transmission ? Les fichiers restent sur le disque.', [
+      choice('Annuler', 'btn--ghost', cancel),
+      choice('Oui, retirer', 'btn--primary', confirm('remove')),
+    ]],
+    delete: [`Supprimer ce torrent et ses fichiers (${formatSize(torrent.size)}) ? C'est définitif.`, [
+      choice('Annuler', 'btn--ghost', cancel),
+      choice('Oui, supprimer', 'btn--danger btn--solid', confirm('delete')),
+    ]],
+  };
+  const [question, buttons] = steps[step];
   return el('div', { class: 'confirm' },
-    el('span', {}, 'Retirer ce torrent ?'),
-    choice('Garder les fichiers', '', () => act('remove', torrent)),
-    choice('Supprimer les fichiers', 'btn--danger', () => act('delete', torrent)),
-    choice('Annuler', 'btn--ghost', cancel));
+    el('p', { class: 'confirm__question' }, question),
+    el('div', { class: 'confirm__actions' }, buttons));
 }
 
 function actionButton(iconId, label, onClick) {
