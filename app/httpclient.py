@@ -38,7 +38,11 @@ def get(url: str, headers: dict | None = None, timeout: int = 30) -> bytes:
 
 
 def get_json(url: str, headers: dict | None = None, timeout: int = 30):
-    return json.loads(get(url, {"Accept": "application/json", **(headers or {})}, timeout))
+    body = get(url, {"Accept": "application/json", **(headers or {})}, timeout)
+    try:
+        return json.loads(body)
+    except ValueError as e:  # page HTML de maintenance, réponse tronquée…
+        raise RemoteError(f"{urllib.parse.urlsplit(url).hostname} : réponse illisible, site en maintenance ?") from e
 
 
 def post_json(url: str, payload: dict, timeout: int = 15) -> bytes:
