@@ -1,4 +1,5 @@
 """Surveillances de recherches : une notification quand une nouvelle release correspond, sans rien télécharger."""
+import logging
 import threading
 import time
 import urllib.parse
@@ -12,6 +13,8 @@ from storage import read_json, write_json
 
 MAX_SEEN = 1000         # releases déjà vues, gardées par surveillance
 MAX_LISTED = 3          # titres cités dans une notification groupée
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -70,7 +73,13 @@ class WatchService:
 
     def check_all(self) -> None:
         for watch in self.all():
-            new = [r for r in self._latest(watch.provider, watch.query) if r.id not in watch.seen]
+            try:
+                latest = self._latest(watch.provider, watch.query)
+            except Exception:
+                # Une source en panne ne doit pas priver les autres surveillances de leur passage
+                log.exception("Surveillance « %s » en échec", watch.label)
+                continue
+            new = [r for r in latest if r.id not in watch.seen]
             if new:
                 self._notify(watch, new)
             with self._lock:

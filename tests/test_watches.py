@@ -3,6 +3,7 @@ import tempfile
 import unittest
 
 from background import DownloadWatcher
+from errors import RemoteError
 from models import Query
 from search import SearchService
 from test_search import FakeProvider, release
@@ -18,6 +19,16 @@ class RecordingNotifier:
     def send(self, title, message, url=""):
         self.sent.append((title, message))
         self.urls.append(url)
+
+
+class FlakyProvider(FakeProvider):
+    key = "flaky"
+    broken = False
+
+    def search(self, query, page):
+        if self.broken:
+            raise RemoteError("flaky.example : réponse illisible, site en maintenance ?")
+        return super().search(query, page)
 
 
 class WatchServiceTest(unittest.TestCase):
@@ -37,6 +48,17 @@ class WatchServiceTest(unittest.TestCase):
         self.provider.releases.insert(0, release(99))
         self.service.check_all()
         self.service.check_all()
+        self.assertEqual(self.notifier.sent, [("Nouvelle release : Films", "Film.99")])
+
+    def test_failing_watch_does_not_skip_the_others(self):
+        flaky = FlakyProvider([release(n) for n in range(5)])
+        service = WatchService(SearchService([flaky, self.provider]), self.notifier, self.path)
+        service.add("En panne", "flaky", Query())
+        service.add("Films", "fake", Query())
+        flaky.broken = True
+        self.provider.releases.insert(0, release(99))
+        with self.assertLogs("watches", "ERROR"):
+            service.check_all()
         self.assertEqual(self.notifier.sent, [("Nouvelle release : Films", "Film.99")])
 
     def test_notification_opens_the_watched_search(self):
