@@ -52,7 +52,7 @@ browser ──> app/server.py ──> providers ───────> search, .
 
 The page asks for results 30 at a time. The source applies the filters it supports itself and sorts the whole catalog. The server applies the others (often size and source), reading a few more pages to fill the batch, up to 5 per batch. Pages already read are kept for 10 minutes, so changing a local filter costs nothing.
 
-Two background tasks run in the server: one checks Transmission every minute for finished downloads, the other runs the watches every 30 minutes.
+Two background tasks run in the server: one checks Transmission every minute for finished downloads, the other runs the watches every 30 minutes (`watches.interval_minutes`).
 
 ## Requirements
 
@@ -98,6 +98,7 @@ Everything lives in `config.json`. Start from `config.example.json`.
 | `transmission.url` | Transmission RPC address, usually `http://<host>:9091/transmission/rpc`. |
 | `transmission.user`, `transmission.password` | RPC login. Leave both empty if RPC authentication is off. |
 | `notifications.webhook_url` | Home Assistant webhook address. Empty: no notifications. |
+| `watches.interval_minutes` | Pause between two checks of the watches, in minutes: 30 by default, 5 at least so as not to overload the source. |
 | `auth.user`, `auth.password_hash` | Page login. Empty hash: no password. Set them with `set_password.py`. |
 | `public_url` | Address of the page, opened when you tap a notification (on the watched search, for a watch). |
 | `data_dir` | Where watches and the bitrate cache are written. `/data` in the container. |

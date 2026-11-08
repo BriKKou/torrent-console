@@ -36,9 +36,18 @@ CONFIG_PATH = os.environ.get("CONFIG_PATH", "/config.json")
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 PORT = 8282
 DOWNLOADS_CHECK_S = 60
-WATCHES_CHECK_S = 30 * 60
+WATCHES_DEFAULT_MINUTES = 30
+WATCHES_MINIMUM_MINUTES = 5     # en dessous, on sollicite trop la source
 
 log = logging.getLogger(__name__)
+
+
+def watches_interval_s(config: dict) -> int:
+    """Pause entre deux passages des surveillances : « watches.interval_minutes » de la configuration."""
+    minutes = (config.get("watches") or {}).get("interval_minutes", WATCHES_DEFAULT_MINUTES)
+    if not isinstance(minutes, int) or minutes < WATCHES_MINIMUM_MINUTES:
+        raise ValueError(f"watches.interval_minutes : nombre entier de minutes, {WATCHES_MINIMUM_MINUTES} au moins")
+    return minutes * 60
 
 
 class App:
@@ -57,11 +66,12 @@ class App:
         self.auth = BasicAuth(**config.get("auth", {}))
         notifier = Notifier(config.get("notifications", {}).get("webhook_url", ""))
         self.watches = WatchService(self.search, notifier, os.path.join(data_dir, "watches.json"), page_url)
+        self.watches_interval_s = watches_interval_s(config)
         self.downloads = DownloadWatcher(self.transmission, notifier, page_url)
 
     def start_background_tasks(self) -> None:
         run_every(DOWNLOADS_CHECK_S, self.downloads.check, "téléchargements")
-        run_every(WATCHES_CHECK_S, self.watches.check_all, "surveillances")
+        run_every(self.watches_interval_s, self.watches.check_all, "surveillances")
 
     def provider_key(self, value) -> str:
         """Source demandée, ou la première de la configuration."""

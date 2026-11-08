@@ -52,7 +52,7 @@ navigateur ──> app/server.py ──> sources ──────────>
 
 La page demande les résultats par lots de 30. La source applique elle-même les filtres qu'elle connaît et trie tout son catalogue. Le serveur applique les autres (souvent la taille et la source) en lisant quelques pages de plus pour remplir le lot, 5 au plus par lot. Les pages déjà lues sont gardées 10 minutes : changer un filtre local ne coûte rien.
 
-Deux tâches de fond tournent dans le serveur : l'une regarde Transmission chaque minute pour repérer les téléchargements terminés, l'autre passe les surveillances toutes les 30 minutes.
+Deux tâches de fond tournent dans le serveur : l'une regarde Transmission chaque minute pour repérer les téléchargements terminés, l'autre passe les surveillances toutes les 30 minutes (`watches.interval_minutes`).
 
 ## Prérequis
 
@@ -98,6 +98,7 @@ Tout se trouve dans `config.json`. Partez de `config.example.json`.
 | `transmission.url` | Adresse RPC de Transmission, en général `http://<hôte>:9091/transmission/rpc`. |
 | `transmission.user`, `transmission.password` | Identifiants RPC. Laissez les deux vides si l'authentification RPC est désactivée. |
 | `notifications.webhook_url` | Adresse du webhook Home Assistant. Vide : pas de notifications. |
+| `watches.interval_minutes` | Pause entre deux passages des surveillances, en minutes : 30 par défaut, 5 au minimum pour ne pas surcharger la source. |
 | `auth.user`, `auth.password_hash` | Identifiant de la page. Empreinte vide : pas de mot de passe. À définir avec `set_password.py`. |
 | `public_url` | Adresse de la page, ouverte quand on touche une notification (sur la recherche surveillée, pour une surveillance). |
 | `data_dir` | Dossier où sont écrits les surveillances et le cache des débits. `/data` dans le conteneur. |

@@ -13,6 +13,9 @@
   "notifications": {
     "webhook_url": ""
   },
+  "watches": {
+    "interval_minutes": 30
+  },
   "auth": {
     "user": "",
     "password_hash": ""
