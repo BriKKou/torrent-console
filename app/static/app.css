@@ -541,6 +541,21 @@ select {
 
 .modal__body { overflow-y: auto; padding: 0 18px 18px; }
 
+/* Version cliquée, épinglée en tête de la liste */
+.vpinned {
+  margin-top: 14px;
+  padding: 0 14px;
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--panel));
+}
+
+.vpinned .vrow { border-top: 0; }
+
+.vlabel { margin: 18px 0 0; color: var(--fg-dim); font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+
+.vlabel--pinned { margin-top: 10px; color: var(--accent); }
+
 /* Bande de couleur par résolution */
 .vgroup--2160p { --band: var(--accent); }
 
@@ -593,6 +608,18 @@ select {
 .vrow .file a { text-decoration: none; }
 
 .vrow .file a:hover { color: var(--accent); }
+
+.vrow__actions { display: flex; align-items: center; gap: 10px; }
+
+/* La version sélectionnée, à sa place dans la liste */
+.vrow--chosen {
+  margin: 0 -6px;
+  padding: 10px 6px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--panel));
+}
+
+.vrow__chosen { color: var(--accent); font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 
 /* Volet Transmission / surveillances */
 .drawer-toggle { position: relative; width: 36px; padding: 0; }
